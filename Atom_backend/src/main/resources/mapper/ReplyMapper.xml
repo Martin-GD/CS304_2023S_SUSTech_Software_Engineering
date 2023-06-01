@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team127.atom.mapper.ReplyMapper">
+<!--  <resultMap id="BaseResultMap" type="com.team127.atom.model.Reply">-->
+<!--    <constructor>-->
+<!--      <idArg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />-->
+<!--      <arg column="author" javaType="java.lang.Integer" jdbcType="INTEGER" />-->
+<!--      <arg column="issue" javaType="java.lang.Integer" jdbcType="INTEGER" />-->
+<!--      <arg column="star" javaType="java.lang.Integer" jdbcType="INTEGER" />-->
+<!--      <arg column="created_at" javaType="java.lang.Long" jdbcType="BIGINT" />-->
+<!--    </constructor>-->
+<!--  </resultMap>-->
+
+  <resultMap id="BaseResultMap" type="com.team127.atom.model.Reply">
+<!--    <constructor>-->
+      <result column="id" property="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <result column="author" property="author" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <result column="issue" property="issue" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <result column="star"  property="star" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <result column="created_at" property="createdAt" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <result column="comment"  property="comment" javaType="java.lang.String" jdbcType="LONGVARCHAR" />
+<!--    </constructor>-->
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, author, issue, star, created_at, comment
+  </sql>
+
+  <sql id="Blob_Column_List">
+    comment
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from reply
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectReplyByUser" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from reply where author = #{userId,jdbcType=VARCHAR};
+  </select>
+  <select id="selectReplyByIssue" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from reply where issue = #{issueId,jdbcType=VARCHAR} order by created_at;
+  </select>
+  <select id="selectPopularReplyByIssue" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from reply where issue = #{issueId,jdbcType=VARCHAR} order by star DESC;
+  </select>
+    <select id="selectReply" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List" />
+          from reply where issue = #{issueId,jdbcType=VARCHAR} and created_at &gt; #{createdAt,jdbcType=BIGINT}  limit 1
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from reply
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="unStarReply" parameterType="java.lang.String">
+    delete from user_like_reply where user = #{userId,jdbcType=VARCHAR} and reply = #{replyId,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insert" parameterType="com.team127.atom.model.Reply">
+    insert into reply (id, author, issue, 
+      star, created_at, comment
+      )
+    values (#{id,jdbcType=VARCHAR}, #{author,jdbcType=INTEGER}, #{issue,jdbcType=INTEGER},
+      #{star,jdbcType=INTEGER}, #{createdAt,jdbcType=BIGINT}, #{comment,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.team127.atom.model.Reply">
+    insert into reply
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="author != null">
+        author,
+      </if>
+      <if test="issue != null">
+        issue,
+      </if>
+      <if test="star != null">
+        star,
+      </if>
+      <if test="createdAt != null">
+        created_at,
+      </if>
+      <if test="comment != null">
+        comment,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="author != null">
+        #{author,jdbcType=INTEGER},
+      </if>
+      <if test="issue != null">
+        #{issue,jdbcType=INTEGER},
+      </if>
+      <if test="star != null">
+        #{star,jdbcType=INTEGER},
+      </if>
+      <if test="createdAt != null">
+        #{createdAt,jdbcType=BIGINT},
+      </if>
+      <if test="comment != null">
+        #{comment,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+    <insert id="starReply" parameterType="java.lang.String">
+      insert into user_like_reply values (#{userId,jdbcType=VARCHAR}, #{replyId,jdbcType=VARCHAR})
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.team127.atom.model.Reply">
+    update reply
+    <set>
+      <if test="author != null">
+        author = #{author,jdbcType=INTEGER},
+      </if>
+      <if test="issue != null">
+        issue = #{issue,jdbcType=INTEGER},
+      </if>
+      <if test="star != null">
+        star = #{star,jdbcType=INTEGER},
+      </if>
+      <if test="createdAt != null">
+        created_at = #{createdAt,jdbcType=BIGINT},
+      </if>
+      <if test="comment != null">
+        comment = #{comment,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.team127.atom.model.Reply">
+    update reply
+    set author = #{author,jdbcType=INTEGER},
+      issue = #{issue,jdbcType=INTEGER},
+      star = #{star,jdbcType=INTEGER},
+      created_at = #{createdAt,jdbcType=BIGINT},
+      comment = #{comment,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.team127.atom.model.Reply">
+    update reply
+    set author = #{author,jdbcType=INTEGER},
+      issue = #{issue,jdbcType=INTEGER},
+      star = #{star,jdbcType=INTEGER},
+      created_at = #{createdAt,jdbcType=BIGINT}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="modifyReply" parameterType="java.lang.String">
+    update reply
+    set comment = #{content,jdbcType=VARCHAR}
+    where id = #{replyId,jdbcType=VARCHAR}
+  </update>
+</mapper>

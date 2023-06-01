@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team127.atom.mapper.IssueMapper">
+  <resultMap id="BaseResultMap" type="com.team127.atom.model.Issue">
+    <constructor>
+      <arg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="opener" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="title" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="star" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="love" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="isDraft" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="createdAt" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="content" javaType="java.lang.String" jdbcType="LONGVARCHAR" />
+    </constructor>
+  </resultMap>
+
+  <resultMap id="ResultMapWithBLOBs" type="com.team127.atom.model.Issue">
+    <constructor>
+      <arg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="opener" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="title" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="star" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="createdAt" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="content" javaType="java.lang.String" jdbcType="LONGVARCHAR" />
+    </constructor>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, opener, title, star, love, isDraft, createdAt, content
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultType="com.team127.atom.model.Issue">
+    select
+    <include refid="Base_Column_List" />
+    from issue
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+    <select id="selectByUserId" parameterType="java.lang.String" resultType="com.team127.atom.model.Issue">
+      select *
+      from issue where opener = #{id,jdbcType=VARCHAR} and isDraft=2
+    </select>
+  <select id="selectByStars" resultType="com.team127.atom.model.Issue">
+    select <include refid="Base_Column_List"/>
+    from issue where isDraft = 2 order by star DESC;
+  </select>
+  <select id="selectByTime" resultType="com.team127.atom.model.Issue">
+    select *
+    from issue where isDraft = 2 order by createdAt DESC;
+  </select>
+  <select id="selectDraft" parameterType="java.lang.String" resultType="com.team127.atom.model.Issue">
+    select
+    <include refid="Base_Column_List" />
+    from issue
+    where opener = #{id,jdbcType=VARCHAR} and isDraft = 0
+  </select>
+  <select id="selectByContent" resultType="com.team127.atom.model.Issue">
+    select
+    <include refid="Base_Column_List" />
+    from issue
+    where content like CONCAT('%',#{content,jdbcType=VARCHAR},'%') and isDraft=2
+  </select>
+  <select id="selectUserLikeIssue" resultType="java.lang.Integer">
+    select count(*) from user_like_issue where user = #{userId,jdbcType=VARCHAR} and issue = #{issueId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectUserStarIssue" resultType="java.lang.Integer">
+    select count(*) from user_star_issue where user = #{userId,jdbcType=VARCHAR} and issue = #{issueId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectUserStarReply" resultType="java.lang.Integer">
+    select count(*) from user_like_reply where user = #{user,jdbcType=VARCHAR} and reply = #{reply,jdbcType=VARCHAR}
+  </select>
+  <select id="selectUserStarComment" resultType="java.lang.Integer">
+    select count(*) from user_star_comment where user = #{userId,jdbcType=VARCHAR} and comment = #{commentId,jdbcType=VARCHAR}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from issue
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="unStarIssue" parameterType="java.lang.String">
+    delete from user_star_issue where user = #{userId,jdbcType=VARCHAR} and issue = #{issueId,jdbcType=VARCHAR}
+  </delete>
+  <delete id="dislikeIssue" parameterType="java.lang.String">
+    delete from user_like_issue where user = #{userId,jdbcType=VARCHAR} and issue = #{issueId,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insert" parameterType="com.team127.atom.model.Issue">
+    insert into issue (id, opener, title, 
+      star, isDraft, createdAt, content
+      )
+    values (#{id,jdbcType=VARCHAR}, #{opener,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR},
+      #{star,jdbcType=INTEGER}, #{isDraft,jdbcType=INTEGER},#{createdAt,jdbcType=BIGINT}, #{content,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.team127.atom.model.Issue">
+    insert into issue
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="opener != null">
+        opener,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="star != null">
+        star,
+      </if>
+      <if test="createdAt != null">
+        created_at,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="opener != null">
+        #{opener,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="star != null">
+        #{star,jdbcType=INTEGER},
+      </if>
+      <if test="createdAt != null">
+        #{createdAt,jdbcType=BIGINT},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <insert id="starIssue" parameterType="java.lang.String">
+    insert into user_star_issue values (#{userId,jdbcType=VARCHAR}, #{issueId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="likeIssue" parameterType="java.lang.String">
+    insert into user_like_issue values (#{userId,jdbcType=VARCHAR}, #{issueId,jdbcType=VARCHAR})
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.team127.atom.model.Issue">
+    update issue
+    <set>
+      <if test="opener != null">
+        opener = #{opener,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+       title =  #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="star != null">
+        star = #{star,jdbcType=INTEGER},
+      </if>
+      <if test="love != null">
+        love = #{love,jdbcType=INTEGER},
+      </if>
+      <if test="createdAt != null">
+        createdAt = #{createdAt,jdbcType=BIGINT},
+      </if>
+      <if test="content != null">
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateDraft">
+    update issue
+    set title = #{title,jdbcType=VARCHAR}
+    , content = #{content,jdbcType=VARCHAR}
+    where id = #{issue,jdbcType=VARCHAR}
+  </update>
+  <update id="postDraft">
+    update issue
+    set isDraft = 2
+    where id = #{issue,jdbcType=VARCHAR}
+  </update>
+</mapper>

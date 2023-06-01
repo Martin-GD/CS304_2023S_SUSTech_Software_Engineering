@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team127.atom.mapper.CollectionMapper">
+  <resultMap id="BaseResultMap" type="com.team127.atom.model.Repository">
+    <constructor>
+      <idArg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ownerId" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="auth" javaType="java.lang.Integer" jdbcType="INTEGER" />
+    </constructor>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, ownerId, name, auth
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from collection
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectListByStars" parameterType="java.lang.Integer" resultType="com.team127.atom.model.Repository">
+    select <include refid="Base_Column_List"/> from collection where id in
+    (select distinct collection, count(*) c from user_star_collection
+    group by collection order by c desc limit #{num,jdbcType=INTEGER}) and (auth = 0 or auth = 1);
+  </select>
+
+  <select id="selectByString" parameterType="java.lang.String" resultType="com.team127.atom.model.Repository">
+    select <include refid="Base_Column_List"/> from collection join user
+    on user.id = collection.ownerId and LOWER(collection.name) like #{word,jdbcType=VARCHAR} or LOWER(user.name) like #{word,jdbcType=VARCHAR}
+    and (auth = 0 or auth = 1);
+  </select>
+
+  <select id="selectStarNum" parameterType="java.lang.String">
+    select count(*) from user_star_collection where collection = #{id,jdbcType=VARCHAR};
+  </select>
+
+  <select id="selectListByOwner" parameterType="java.lang.String" resultType="com.team127.atom.model.Repository">
+    select <include refid="Base_Column_List"/> from collection where ownerId = #{ownerId,jdbcType=VARCHAR};
+  </select>
+
+  <select id="selectUserStarRepo" parameterType="java.lang.String" resultType="com.team127.atom.model.Repository">
+    select <include refid="Base_Column_List"/> from collection
+        join user_star_collection on collection = id and user = #{ownerId,jdbcType=VARCHAR};
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from collection
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insert" parameterType="com.team127.atom.model.Repository">
+    insert into collection (id, ownerId, name,
+      auth)
+    values (#{id,jdbcType=VARCHAR}, #{ownerId,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
+      #{auth,jdbcType=INTEGER});
+  </insert>
+
+  <insert id="addUserStar">
+    insert into user_star_collection(collection, user)
+    values (#{collectionId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR});
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.team127.atom.model.Repository">
+    insert into collection
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="Id != null">
+        ownerId,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="auth != null">
+        auth,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="ownerId != null">
+        #{ownerId,jdbcType=},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="auth != null">
+        #{auth,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+
+  <delete id="removeUserStar" parameterType="java.lang.String">
+    delete from user_star_collection
+           where collection = #{collectionId,jdbcType=VARCHAR} and user = #{userId,jdbcType=INTEGER};
+  </delete>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.team127.atom.model.Repository">
+    update collection
+    <set>
+      <if test="ownerId != null">
+        ownerId = #{ownerId,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="auth != null">
+        auth = #{auth,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.team127.atom.model.Repository">
+    update collection
+    set ownerId = #{ownerId,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      auth = #{auth,jdbcType=INTEGER}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

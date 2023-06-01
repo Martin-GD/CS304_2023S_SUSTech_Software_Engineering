@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team127.atom.mapper.NoteMapper">
+  <resultMap id="BaseResultMap" type="com.team127.atom.model.Note">
+    <constructor>
+      <idArg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="owner" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="collection" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="auth" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="created_at" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="updated_at" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="description" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, owner, collection, name, auth, created_at, updated_at, description
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from note
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <select id="recommendNotes" parameterType="java.lang.String" resultType="com.team127.atom.model.Note">
+    select <include refid="Base_Column_List" /> from note where owner != #{userId,jdbcType=VARCHAR} limit 3;
+  </select>
+
+  <select id="searchNotes" parameterType="java.lang.String" resultType="com.team127.atom.model.Note">
+    select <include refid="Base_Column_List" /> from note where auth != 2
+    and (description like '%${word,jdbcType=VARCHAR}%' or name like '%${word,jdbcType=VARCHAR}%') limit 3;
+  </select>
+
+  <select id="selectRepoNotes" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from note where collection = #{repoId,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectStarNotes" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" />
+    from note join user_star_note on user = #{userId,jdbcType=VARCHAR} and note = id;
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from note
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <delete id="unStarNote" parameterType="java.lang.String">
+    delete from user_star_note where user = #{userId,jdbcType=VARCHAR} and note = #{noteId,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="starNote" parameterType="java.lang.String">
+    insert into user_star_note values (#{noteId,jdbcType=VARCHAR},#{userId,jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="insert" parameterType="com.team127.atom.model.Note">
+    insert into note (id, owner, collection, name, auth, created_at, updated_at, description)
+    values (#{id,jdbcType=VARCHAR}, #{owner,jdbcType=VARCHAR}, #{repository,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
+      #{auth,jdbcType=INTEGER}, #{createdAt,jdbcType=BIGINT}, #{updatedAt,jdbcType=BIGINT}, #{description,jdbcType=VARCHAR}
+      )
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.team127.atom.model.Note">
+    insert into note
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="owner != null">
+        owner,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="auth != null">
+        auth,
+      </if>
+      <if test="createdAt != null">
+        created_at,
+      </if>
+      <if test="updatedAt != null">
+        updated_at,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="owner != null">
+        #{owner,jdbcType=VARCHAR},
+      </if>
+      <if test="collection != null">
+        #{repository,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="auth != null">
+        #{auth,jdbcType=INTEGER},
+      </if>
+      <if test="createdAt != null">
+        #{createdAt,jdbcType=BIGINT},
+      </if>
+      <if test="updatedAt != null">
+        #{updatedAt,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.team127.atom.model.Note">
+    update note
+    <set>
+      <if test="owner != null">
+        owner = #{owner,jdbcType=VARCHAR},
+      </if>
+      <if test="collection != null">
+        #{repository,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="auth != null">
+        auth = #{auth,jdbcType=INTEGER},
+      </if>
+      <if test="createdAt != null">
+        created_at = #{createdAt,jdbcType=BIGINT},
+      </if>
+      <if test="updatedAt != null">
+        updated_at = #{updatedAt,jdbcType=BIGINT},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.team127.atom.model.Note">
+    update note
+    set owner = #{owner,jdbcType=VARCHAR},
+      collection = #{repository,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      auth = #{auth,jdbcType=INTEGER},
+      created_at = #{createdAt,jdbcType=BIGINT},
+      updated_at = #{updatedAt,jdbcType=BIGINT},
+      description = #{description,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

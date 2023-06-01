@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team127.atom.mapper.TagMapper">
+  <resultMap id="BaseResultMap" type="com.team127.atom.model.Tag">
+    <constructor>
+      <idArg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="color" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+
+  <resultMap id="ResultMapWithBLOBs" type="com.team127.atom.model.Tag">
+    <constructor>
+      <idArg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="color" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="description" javaType="java.lang.String" jdbcType="LONGVARCHAR" />
+      <arg column="creator" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, name, color
+  </sql>
+
+  <sql id="Blob_Column_List">
+    description, creator
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from tag
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectAllTags" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+    select *
+    from tag where creator = #{id,jdbcType=VARCHAR};
+  </select>
+
+  <select id="selectRepoTags" parameterType="java.lang.String" resultType="com.team127.atom.model.Tag">
+    select * from tag join (select tag from collection_tag where collection = #{repoId,jdbcType=VARCHAR}) t on tag.id = t.tag
+  </select>
+
+  <select id="selectNoteTags" parameterType="java.lang.String" resultType="com.team127.atom.model.Tag">
+    select * from tag join (select tag from note_tag where note = #{noteId,jdbcType=VARCHAR}) t on tag.id = t.tag
+  </select>
+
+  <delete id="delete" parameterType="java.lang.String">
+    delete from tag
+    where id = #{id}
+  </delete>
+
+  <delete id="removeRepoTag" parameterType="java.lang.String">
+    delete from collection_tag where collection = #{repoId,jdbcType=VARCHAR} and tag = #{tagId,jdbcType=VARCHAR};
+  </delete>
+
+  <delete id="removeNoteTag" parameterType="java.lang.String">
+    delete from note_tag where note = #{noteId,jdbcType=VARCHAR} and tag = #{tagId,jdbcType=VARCHAR};
+  </delete>
+
+  <insert id="insert">
+    insert into tag (id, name, color, description, creator)
+    values (#{tag.id,jdbcType=VARCHAR}, #{tag.name,jdbcType=VARCHAR}, #{tag.color,jdbcType=VARCHAR},
+      #{tag.description,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR})
+  </insert>
+
+  <insert id="addRepoTag" parameterType="java.lang.String">
+    insert into collection_tag values (#{repoId,jdbcType=VARCHAR}, #{tagId,jdbcType=VARCHAR});
+  </insert>
+
+  <insert id="addNoteTag" parameterType="java.lang.String">
+    insert into note_tag values (#{noteId,jdbcType=VARCHAR}, #{tagId,jdbcType=VARCHAR});
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.team127.atom.model.Tag">
+    insert into tag
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="color != null">
+        color,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="color != null">
+        #{color,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.team127.atom.model.Tag">
+    update tag
+    <set>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="color != null">
+        color = #{color,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.team127.atom.model.Tag">
+    update tag
+    set name = #{name,jdbcType=VARCHAR},
+      color = #{color,jdbcType=VARCHAR},
+      description = #{description,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.team127.atom.model.Tag">
+    update tag
+    set name = #{name,jdbcType=VARCHAR},
+      color = #{color,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

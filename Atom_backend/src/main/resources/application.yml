@@ -1,0 +1,45 @@
+spring:
+    mvc:
+      pathmatch:
+        matching-strategy: ant_path_matcher
+    datasource:
+        url: jdbc:mysql://10.26.142.228:3306/atom?useUnicode=true&characterEncoding=utf8&useSSL=false
+        username: root
+        password: root
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        druid:
+          initial-size: 10
+          min-idle: 10
+          max-active: 20
+    cache:
+        type: redis
+        redis:
+            time-to-live: 3600s
+    redis:
+      jedis:
+        pool:
+            max-active: 10
+            max-wait: -1
+            max-idle: 10
+            min-idle: 0
+      database: 0
+      host: 10.26.142.228
+      port: 6379
+      password: 123456
+
+    data:
+      mongodb:
+        uri: mongodb://10.26.142.228:27017/atom
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.team127.atom.model
+
+chatgpt:
+  token: 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
+  proxy-host: 127.0.0.1
+  proxy-port: 9090
+  session-expiration-time: 60
+
+
+
